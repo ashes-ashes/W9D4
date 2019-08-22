@@ -9,9 +9,13 @@
   </head>
 
   <body>
+    <nav class="navtopbar">
+    <h2><img src="https://i.pinimg.com/originals/5c/b9/18/5cb918952f184853961ea83597082f38.png">kittr</h2>
+    <div>
     <ul>
       <li><a href="<%= feed_url %>">Feed</a></li>
       <li><a href="<%= search_users_url %>">User Search</a></li>
+      <li><h1>Welcome <%= current_user.username %>!</h1></li>
     </ul>
 
     <% if current_user %>
@@ -25,7 +29,8 @@
         <input type="submit" value="Logout!">
       </form>
     <% end %>
-    
+    </div>
+    </nav>
     <%= yield %>
   </body>
 </html>
