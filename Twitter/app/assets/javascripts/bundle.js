@@ -100,7 +100,6 @@ const APIUtil = {
     return $.ajax({
       url: `/users/${id}/follow`,
       method: 'POST',
-      followee_id: id,
       dataType: 'JSON'
     });
   },
@@ -109,7 +108,17 @@ const APIUtil = {
     return $.ajax({
       url: `/users/${id}/follow`,
       method: 'DELETE',
-      followee_id: id,
+      dataType: 'JSON'
+    });
+  },
+
+  searchUsers: (queryVal) => {
+    return $.ajax({
+      url: '/users/search',
+      method: 'GET',
+      data: {
+        query: queryVal
+      },
       dataType: 'JSON'
     });
   }
@@ -130,10 +139,10 @@ module.exports = APIUtil;
 const APIUtil = __webpack_require__(/*! ./api_util.js */ "./frontend/api_util.js");
 
 class FollowToggle {
-  constructor(el) {
+  constructor(el, options) {
     this.$el = $(el);
-    this.userID = this.$el.data("user-id");
-    this.followState = this.$el.data("initial-follow-state");
+    this.userID = this.$el.data("user-id") || options.userID;
+    this.followState = this.$el.data("initial-follow-state") || options.followState;
     this.render();
     this.handleClick();
   }
@@ -186,13 +195,71 @@ module.exports = FollowToggle;
 /***/ (function(module, exports, __webpack_require__) {
 
 const FollowToggle = __webpack_require__(/*! ./follow_toggle.js */ "./frontend/follow_toggle.js");
+const UsersSearch = __webpack_require__(/*! ./users_search.js */ "./frontend/users_search.js");
 
 $( () => {
   Array.from($("button.follow-toggle")).forEach((button) => {
       new FollowToggle(button);
     }
   );
+  Array.from($("nav.users-search")).forEach((nav) => {
+    new UsersSearch(nav);
+  });
 });
+
+/***/ }),
+
+/***/ "./frontend/users_search.js":
+/*!**********************************!*\
+  !*** ./frontend/users_search.js ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const APIUtil = __webpack_require__(/*! ./api_util.js */ "./frontend/api_util.js");
+const FollowToggle = __webpack_require__(/*! ./follow_toggle */ "./frontend/follow_toggle.js");
+class UsersSearch {
+  constructor(el) {
+    this.$el = $(el);
+    this.$input = this.$el.find("input");
+    this.$ul = this.$el.find("ul");
+    this.handleInput();
+
+  }
+
+  handleInput() {
+    this.$input.on('keyup', (e) => {
+
+      APIUtil.searchUsers(this.$input.val())
+      .then(success => {
+        this.renderResults(success);
+      });
+    });
+  }
+
+  renderResults(users) {
+    console.log(users);
+    this.$ul.empty();
+    users.forEach( user => {
+
+      let $li = $('<li>');
+      let $a = $(`<a href="/users/${user.id}">`);
+      $a.append(`${user.username}`);
+      $li.append($a);
+      this.$ul.append($li);
+      
+
+      let $button = $('<button>').addClass('follow-toggle');
+      new FollowToggle($button, {
+        userID: user.id,
+        followState: user.followed
+      });
+      $li.append($button);
+    });
+  }
+}
+
+module.exports = UsersSearch;
 
 /***/ })
 
